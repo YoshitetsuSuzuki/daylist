@@ -12,7 +12,9 @@ import {
   countActive,
 } from "@/lib/selectors/todoSelectors";
 import { formatJpLongDate } from "@/lib/date/dateUtils";
+import { getDeadlineState } from "@/lib/date/deadlineUtils";
 import { TodoCard } from "@/components/todos/TodoCard";
+import { UpcomingTodoRow } from "@/components/todos/UpcomingTodoRow";
 import { MonthlyCalendar } from "@/components/calendar/MonthlyCalendar";
 import { EmptyState } from "@/components/common/EmptyState";
 import { LoadingSkeleton } from "@/components/common/LoadingSkeleton";
@@ -26,6 +28,10 @@ import {
   Settings as SettingsIcon,
 } from "lucide-react";
 
+// 近日のやること：今日を含めて向こう 2 週間、最大 10 件
+const UPCOMING_DAYS = 14;
+const UPCOMING_LIMIT = 10;
+
 export default function HomePage() {
   const router = useRouter();
   const { data, toggleTodoCompleted, setSelectedDate, setViewMonth } =
@@ -35,23 +41,26 @@ export default function HomePage() {
 
   const { events, todos, settings, initialized } = data;
 
+  // ヘッダーの「残り N 件」用：今日のやること
   const todayTodos = useMemo(
     () => selectTodayTodos(todos, events, now, settings.showCompletedOnHome),
     [todos, events, now, settings.showCompletedOnHome],
   );
   const overdue = useMemo(() => selectOverdueTodos(todos, now), [todos, now]);
-  const upcoming = useMemo(() => {
-    // 今日ちょうどのものは「今日やること」に出るため、明日以降〜7日を近接として出す
-    return selectUpcomingTodos(todos, now).filter((t) => t.dueDate !== todayKeyOf(now));
-  }, [todos, now]);
+  // 締切が近い順に、今日〜2週間先まで／最大10件（期限切れは上の別枠に出すため除外）
+  const upcoming = useMemo(
+    () =>
+      selectUpcomingTodos(todos, now, UPCOMING_DAYS)
+        .filter((t) => getDeadlineState(t, now) !== "overdue")
+        .slice(0, UPCOMING_LIMIT),
+    [todos, now],
+  );
 
   if (!initialized) {
     return <LoadingSkeleton />;
   }
 
   const remaining = countActive(todayTodos);
-  const nothingToday = todayTodos.filter((t) => !t.isCompleted).length === 0;
-  const nothingUpcoming = overdue.length === 0 && upcoming.length === 0;
 
   const openDay = (dateKey: string) => {
     setSelectedDate(dateKey);
@@ -114,53 +123,32 @@ export default function HomePage() {
             </section>
           )}
 
-          {/* 今日やること */}
-          <section aria-label="今日やること" className="space-y-2">
-            <h2 className="px-1 text-sm font-bold">今日やること</h2>
-            {nothingToday && todayTodos.length === 0 ? (
+          {/* 近日のやること（締切が近い順・今日〜2週間先／最大10件） */}
+          <section aria-label="近日のやること" className="space-y-2">
+            <div className="flex items-baseline justify-between px-1">
+              <h2 className="text-sm font-bold">近日のやること</h2>
+              <span className="text-xs text-muted">締切が近い順</span>
+            </div>
+            {upcoming.length === 0 ? (
               <EmptyState
                 icon={<Sparkles size={28} aria-hidden />}
-                title="今日のやることはありません"
+                title="近日のやることはありません"
                 description="新しい予定やタスクを追加してみましょう。右下の＋から追加できます。"
               />
             ) : (
-              <div className="space-y-2">
-                {todayTodos.map((t) => (
-                  <TodoCard
-                    key={t.id}
-                    todo={t}
-                    now={now}
-                    onToggle={() => toggleTodoCompleted(t.id)}
-                    onOpen={() => setEditing(t)}
-                  />
+              <ul className="space-y-1.5">
+                {upcoming.map((t) => (
+                  <li key={t.id}>
+                    <UpcomingTodoRow
+                      todo={t}
+                      onToggle={() => toggleTodoCompleted(t.id)}
+                      onOpen={() => setEditing(t)}
+                    />
+                  </li>
                 ))}
-              </div>
+              </ul>
             )}
           </section>
-
-          {/* 期限が近いやること */}
-          {upcoming.length > 0 && (
-            <section aria-label="期限が近いやること" className="space-y-2">
-              <h2 className="px-1 text-sm font-bold">期限が近いやること</h2>
-              <div className="space-y-2">
-                {upcoming.map((t) => (
-                  <TodoCard
-                    key={t.id}
-                    todo={t}
-                    now={now}
-                    onToggle={() => toggleTodoCompleted(t.id)}
-                    onOpen={() => setEditing(t)}
-                  />
-                ))}
-              </div>
-            </section>
-          )}
-
-          {nothingToday && nothingUpcoming && todayTodos.length === 0 && (
-            <p className="px-1 text-sm text-muted">
-              直近の締切はありません。良いペースです。
-            </p>
-          )}
         </div>
 
         {/* ミニカレンダー */}
@@ -197,10 +185,3 @@ export default function HomePage() {
   );
 }
 
-// 日付キー（now と同じ基準）を得る小さなヘルパー（selectors 経由の import 循環を避ける）
-function todayKeyOf(now: Date): string {
-  const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, "0");
-  const d = String(now.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
-}
