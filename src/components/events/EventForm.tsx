@@ -217,14 +217,7 @@ export function EventForm({ open, onClose, event, defaultDate }: Props) {
             </div>
           )}
 
-          <Field label="カテゴリー">
-            <CategoryPicker value={category} onChange={setCategory} />
-          </Field>
-
-          <Field label="優先度">
-            <PriorityPicker value={priority} onChange={setPriority} />
-          </Field>
-
+          {/* 場所・メモは時間の下、カテゴリーの上に配置 */}
           <Field label="場所（任意）" htmlFor={`${formId}-loc`}>
             <TextInput
               id={`${formId}-loc`}
@@ -241,6 +234,14 @@ export function EventForm({ open, onClose, event, defaultDate }: Props) {
               onChange={(e) => setMemo(e.target.value)}
               placeholder="持ち物・準備など"
             />
+          </Field>
+
+          <Field label="カテゴリー">
+            <CategoryPicker value={category} onChange={setCategory} />
+          </Field>
+
+          <Field label="優先度">
+            <PriorityPicker value={priority} onChange={setPriority} />
           </Field>
 
           <Field label="色（任意）">

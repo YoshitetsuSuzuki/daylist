@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Calendar, CheckSquare } from "lucide-react";
+import { Home, CheckSquare } from "lucide-react";
 
+// カレンダーはホーム画面に常設のため、下タブは「ホーム」「やること」の2つに絞る。
 const items = [
   { href: "/", label: "ホーム", icon: Home },
-  { href: "/calendar", label: "カレンダー", icon: Calendar },
   { href: "/todos", label: "やること", icon: CheckSquare },
 ];
 
