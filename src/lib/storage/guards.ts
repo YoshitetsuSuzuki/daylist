@@ -86,7 +86,8 @@ export function isSettings(v: unknown): v is Settings {
     (v.weekStartsOn === 0 || v.weekStartsOn === 1) &&
     isBool(v.showCompletedOnHome) &&
     isBool(v.sampleDataSeeded) &&
-    isOptStr(v.wallpaper)
+    isOptStr(v.wallpaper) &&
+    (v.wallpaperOpacity === undefined || typeof v.wallpaperOpacity === "number")
   );
 }
 

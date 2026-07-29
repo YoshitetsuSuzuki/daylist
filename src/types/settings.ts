@@ -8,7 +8,12 @@ export interface Settings {
   sampleDataSeeded: boolean;
   /** ホームの壁紙（圧縮済み data URL。未設定なら既定背景） */
   wallpaper?: string;
+  /** 壁紙の濃さ 0.1〜1（1=そのまま濃い / 小さいほど薄い。未設定は既定値） */
+  wallpaperOpacity?: number;
 }
+
+/** 壁紙の濃さの既定値（現行の見た目を維持） */
+export const DEFAULT_WALLPAPER_OPACITY = 0.8;
 
 export const DEFAULT_SETTINGS: Settings = {
   weekStartsOn: 0,

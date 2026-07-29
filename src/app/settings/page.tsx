@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { useAppData } from "@/context/AppDataContext";
 import { useToast } from "@/context/ToastContext";
+import { DEFAULT_WALLPAPER_OPACITY } from "@/types";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { LoadingSkeleton } from "@/components/common/LoadingSkeleton";
 import { Toggle } from "@/components/common/FormFields";
@@ -162,14 +163,49 @@ export default function SettingsPage() {
           ホーム画面の背景に好きな写真を設定できます（端末内に保存されます）。
         </p>
         {settings.wallpaper && (
-          <div className="overflow-hidden rounded-xl border border-border">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={settings.wallpaper}
-              alt="現在の壁紙"
-              className="h-28 w-full object-cover"
-            />
-          </div>
+          <>
+            <div className="relative overflow-hidden rounded-xl border border-border">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={settings.wallpaper}
+                alt="現在の壁紙"
+                className="h-28 w-full object-cover"
+              />
+              {/* 濃さのプレビュー（ホームと同じ膜を重ねる） */}
+              <div
+                className="absolute inset-0"
+                style={{
+                  backgroundColor: `rgb(var(--color-bg) / ${
+                    1 -
+                    (settings.wallpaperOpacity ?? DEFAULT_WALLPAPER_OPACITY)
+                  })`,
+                }}
+              />
+            </div>
+            <div>
+              <p className="mb-1 text-xs font-semibold text-muted">
+                壁紙の濃さ
+              </p>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted">薄い</span>
+                <input
+                  type="range"
+                  min={0.1}
+                  max={1}
+                  step={0.05}
+                  value={settings.wallpaperOpacity ?? DEFAULT_WALLPAPER_OPACITY}
+                  onChange={(e) =>
+                    updateSettings({
+                      wallpaperOpacity: Number(e.target.value),
+                    })
+                  }
+                  aria-label="壁紙の濃さ"
+                  className="h-2 flex-1 cursor-pointer accent-primary"
+                />
+                <span className="text-xs text-muted">濃い</span>
+              </div>
+            </div>
+          </>
         )}
         <div className="grid grid-cols-2 gap-2">
           <Button

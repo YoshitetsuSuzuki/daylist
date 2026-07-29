@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { TodoItem, CalendarEvent } from "@/types";
+import { DEFAULT_WALLPAPER_OPACITY } from "@/types";
 import { useAppData } from "@/context/AppDataContext";
 import { useNow } from "@/hooks/useNow";
 import {
@@ -94,14 +95,21 @@ export default function HomePage() {
 
   return (
     <div className="space-y-5">
-      {/* 壁紙（設定時のみ。膜はごく薄くして壁紙を濃く見せる） */}
+      {/* 壁紙（設定時のみ。濃さ設定に応じて膜の濃度を変える） */}
       {settings.wallpaper && (
         <div aria-hidden className="fixed inset-0 -z-10">
           <div
             className="absolute inset-0 bg-cover bg-center"
             style={{ backgroundImage: `url(${settings.wallpaper})` }}
           />
-          <div className="absolute inset-0 bg-bg/20" />
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundColor: `rgb(var(--color-bg) / ${
+                1 - (settings.wallpaperOpacity ?? DEFAULT_WALLPAPER_OPACITY)
+              })`,
+            }}
+          />
         </div>
       )}
 
