@@ -18,16 +18,14 @@ import { TodoCard } from "@/components/todos/TodoCard";
 import { UpcomingTodoRow } from "@/components/todos/UpcomingTodoRow";
 import { UpcomingEventRow } from "@/components/events/UpcomingEventRow";
 import { MonthlyCalendar } from "@/components/calendar/MonthlyCalendar";
+import { SelectedDayAgenda } from "@/components/calendar/SelectedDayAgenda";
 import { EmptyState } from "@/components/common/EmptyState";
 import { LoadingSkeleton } from "@/components/common/LoadingSkeleton";
 import { TodoForm } from "@/components/todos/TodoForm";
 import { EventForm } from "@/components/events/EventForm";
-import { Button } from "@/components/common/Button";
 import {
-  CalendarDays,
   Sparkles,
   AlertTriangle,
-  ArrowRight,
   Settings as SettingsIcon,
 } from "lucide-react";
 
@@ -37,11 +35,13 @@ const UPCOMING_LIMIT = 10;
 
 export default function HomePage() {
   const router = useRouter();
-  const { data, toggleTodoCompleted, setSelectedDate, setViewMonth } =
+  const { data, toggleTodoCompleted, setSelectedDate, setViewMonth, getTodo } =
     useAppData();
   const now = useNow();
   const [editing, setEditing] = useState<TodoItem | null>(null);
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
+  // 選択日への予定追加（ページ遷移せずその場で開く）
+  const [createEventOpen, setCreateEventOpen] = useState(false);
 
   const { events, todos, settings, initialized } = data;
 
@@ -71,9 +71,9 @@ export default function HomePage() {
 
   const remaining = countActive(todayTodos);
 
+  // 日付タップ：ページ遷移せず、その日を選択（下のアジェンダに反映）
   const openDay = (dateKey: string) => {
     setSelectedDate(dateKey);
-    router.push("/calendar");
   };
 
   return (
@@ -184,9 +184,9 @@ export default function HomePage() {
           </section>
         </div>
 
-        {/* ミニカレンダー */}
-        <div className="space-y-3">
-          <section aria-label="今月のカレンダー" className="space-y-2">
+        {/* カレンダー：日付タップでその場に選択日の予定を表示・追加（ページ遷移なし） */}
+        <div className="space-y-4">
+          <section aria-label="今月のカレンダー">
             <MonthlyCalendar
               viewMonth={data.viewMonth}
               selectedDate={data.selectedDate}
@@ -196,16 +196,18 @@ export default function HomePage() {
               onSelectDate={openDay}
               onChangeMonth={setViewMonth}
             />
-            <Button
-              variant="secondary"
-              onClick={() => router.push("/calendar")}
-              className="w-full"
-            >
-              <CalendarDays size={18} aria-hidden />
-              カレンダーを開く
-              <ArrowRight size={16} aria-hidden />
-            </Button>
           </section>
+
+          <SelectedDayAgenda
+            dateKey={data.selectedDate}
+            events={events}
+            todos={todos}
+            getTodo={getTodo}
+            onOpenEvent={(e) => setEditingEvent(e)}
+            onOpenTodo={(t) => setEditing(t)}
+            onToggleTodo={toggleTodoCompleted}
+            onAddEvent={() => setCreateEventOpen(true)}
+          />
         </div>
       </div>
 
@@ -218,6 +220,12 @@ export default function HomePage() {
         open={!!editingEvent}
         onClose={() => setEditingEvent(null)}
         event={editingEvent}
+      />
+      {/* 選択日を初期値にした新規予定（その場で追加・遷移なし） */}
+      <EventForm
+        open={createEventOpen}
+        onClose={() => setCreateEventOpen(false)}
+        defaultDate={data.selectedDate}
       />
     </div>
   );
