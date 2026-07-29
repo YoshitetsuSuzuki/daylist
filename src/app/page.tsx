@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { TodoItem } from "@/types";
+import type { TodoItem, CalendarEvent } from "@/types";
 import { useAppData } from "@/context/AppDataContext";
 import { useNow, greetingFor } from "@/hooks/useNow";
 import {
@@ -11,14 +11,17 @@ import {
   selectOverdueTodos,
   countActive,
 } from "@/lib/selectors/todoSelectors";
+import { selectUpcomingEvents } from "@/lib/selectors/eventSelectors";
 import { formatJpLongDate } from "@/lib/date/dateUtils";
 import { getDeadlineState } from "@/lib/date/deadlineUtils";
 import { TodoCard } from "@/components/todos/TodoCard";
 import { UpcomingTodoRow } from "@/components/todos/UpcomingTodoRow";
+import { UpcomingEventRow } from "@/components/events/UpcomingEventRow";
 import { MonthlyCalendar } from "@/components/calendar/MonthlyCalendar";
 import { EmptyState } from "@/components/common/EmptyState";
 import { LoadingSkeleton } from "@/components/common/LoadingSkeleton";
 import { TodoForm } from "@/components/todos/TodoForm";
+import { EventForm } from "@/components/events/EventForm";
 import { Button } from "@/components/common/Button";
 import {
   CalendarDays,
@@ -38,6 +41,7 @@ export default function HomePage() {
     useAppData();
   const now = useNow();
   const [editing, setEditing] = useState<TodoItem | null>(null);
+  const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
 
   const { events, todos, settings, initialized } = data;
 
@@ -54,6 +58,11 @@ export default function HomePage() {
         .filter((t) => getDeadlineState(t, now) !== "overdue")
         .slice(0, UPCOMING_LIMIT),
     [todos, now],
+  );
+  // 開始が近い順に、今日〜2週間先まで／最大10件
+  const upcomingEvents = useMemo(
+    () => selectUpcomingEvents(events, now, UPCOMING_DAYS, UPCOMING_LIMIT),
+    [events, now],
   );
 
   if (!initialized) {
@@ -149,6 +158,30 @@ export default function HomePage() {
               </ul>
             )}
           </section>
+
+          {/* 近日の予定（開始が近い順・今日〜2週間先／最大10件） */}
+          <section aria-label="近日の予定" className="space-y-2">
+            <div className="flex items-baseline justify-between px-1">
+              <h2 className="text-sm font-bold">近日の予定</h2>
+              <span className="text-xs text-muted">日付が近い順</span>
+            </div>
+            {upcomingEvents.length === 0 ? (
+              <p className="rounded-2xl bg-surface px-4 py-5 text-center text-sm text-muted">
+                近日の予定はありません
+              </p>
+            ) : (
+              <ul className="space-y-1.5">
+                {upcomingEvents.map((e) => (
+                  <li key={e.id}>
+                    <UpcomingEventRow
+                      event={e}
+                      onOpen={() => setEditingEvent(e)}
+                    />
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
         </div>
 
         {/* ミニカレンダー */}
@@ -180,6 +213,11 @@ export default function HomePage() {
         open={!!editing}
         onClose={() => setEditing(null)}
         todo={editing}
+      />
+      <EventForm
+        open={!!editingEvent}
+        onClose={() => setEditingEvent(null)}
+        event={editingEvent}
       />
     </div>
   );
