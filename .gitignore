@@ -1,0 +1,25 @@
+/node_modules
+/.next/
+/out/
+/build
+.DS_Store
+*.pem
+npm-debug.log*
+.env*.local
+/coverage
+next-env.d.ts
+
+# Capacitor (ネイティブのビルド生成物。native プロジェクト自体は追跡する)
+/ios/App/Pods/
+/ios/App/App/public/
+/ios/App/output/
+/ios/App/build/
+/android/app/build/
+/android/build/
+/android/.gradle/
+/android/app/src/main/assets/public/
+/android/local.properties
+/android/capacitor-cordova-android-plugins/
+
+# TypeScript ビルドキャッシュ
+tsconfig.tsbuildinfo

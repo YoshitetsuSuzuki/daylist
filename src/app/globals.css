@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * デザインテーマは CSS 変数で一元管理する。
+ * ダークモードは MVP では既定オフだが、:root の値を差し替えるだけで対応できるようにしておく。
+ * 値は "R G B"（Tailwind の rgb(var(--x) / alpha) 記法に対応）。
+ */
+:root {
+  --color-bg: 246 247 250; /* 非常に薄いグレー */
+  --color-surface: 255 255 255; /* カード等 */
+  --color-surface-muted: 241 243 247;
+  --color-border: 226 230 237;
+  --color-foreground: 30 34 44; /* 本文（十分なコントラスト） */
+  --color-muted: 108 116 132; /* 補助テキスト */
+  --color-primary: 79 107 237; /* 落ち着いたブルー/青紫 */
+  --color-primary-foreground: 255 255 255;
+  --color-primary-soft: 238 241 253;
+  --color-danger: 209 78 78;
+  --color-danger-soft: 251 235 235;
+  --color-success: 63 157 143;
+  --color-warning: 214 152 44;
+
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* 将来のダークモード用（今は無効。data-theme='dark' で有効化できる） */
+[data-theme="dark"] {
+  --color-bg: 17 19 24;
+  --color-surface: 28 31 38;
+  --color-surface-muted: 36 40 48;
+  --color-border: 48 53 63;
+  --color-foreground: 233 236 242;
+  --color-muted: 156 164 178;
+  --color-primary: 122 145 250;
+  --color-primary-foreground: 17 19 24;
+  --color-primary-soft: 36 42 66;
+  --color-danger: 224 116 116;
+  --color-danger-soft: 58 38 38;
+  --color-success: 96 190 176;
+  --color-warning: 224 174 84;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+body {
+  background-color: rgb(var(--color-bg));
+  color: rgb(var(--color-foreground));
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "palt";
+}
+
+/* フォーカスリングは消さない（アクセシビリティ） */
+:focus-visible {
+  outline: 2px solid rgb(var(--color-primary));
+  outline-offset: 2px;
+}
+
+/* 数値・日付入力のネイティブ装飾を最小限に */
+input[type="date"],
+input[type="time"] {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* スクロールバーを控えめに */
+* {
+  scrollbar-width: thin;
+}
