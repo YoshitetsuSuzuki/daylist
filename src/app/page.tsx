@@ -94,14 +94,14 @@ export default function HomePage() {
 
   return (
     <div className="space-y-5">
-      {/* 壁紙（設定時のみ。テキストの可読性のため薄いスクリムを重ねる） */}
+      {/* 壁紙（設定時のみ。膜はごく薄くして壁紙を濃く見せる） */}
       {settings.wallpaper && (
         <div aria-hidden className="fixed inset-0 -z-10">
           <div
             className="absolute inset-0 bg-cover bg-center"
             style={{ backgroundImage: `url(${settings.wallpaper})` }}
           />
-          <div className="absolute inset-0 bg-bg/70" />
+          <div className="absolute inset-0 bg-bg/20" />
         </div>
       )}
 
