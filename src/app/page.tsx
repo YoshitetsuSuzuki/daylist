@@ -4,28 +4,32 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { TodoItem, CalendarEvent } from "@/types";
 import { useAppData } from "@/context/AppDataContext";
-import { useNow, greetingFor } from "@/hooks/useNow";
+import { useNow } from "@/hooks/useNow";
 import {
   selectTodayTodos,
   selectUpcomingTodos,
   selectOverdueTodos,
   countActive,
 } from "@/lib/selectors/todoSelectors";
-import { selectUpcomingEvents } from "@/lib/selectors/eventSelectors";
+import {
+  selectUpcomingEvents,
+  selectEventsInMonth,
+} from "@/lib/selectors/eventSelectors";
 import { formatJpLongDate } from "@/lib/date/dateUtils";
 import { getDeadlineState } from "@/lib/date/deadlineUtils";
 import { TodoCard } from "@/components/todos/TodoCard";
 import { UpcomingTodoRow } from "@/components/todos/UpcomingTodoRow";
 import { UpcomingEventRow } from "@/components/events/UpcomingEventRow";
 import { MonthlyCalendar } from "@/components/calendar/MonthlyCalendar";
-import { SelectedDayAgenda } from "@/components/calendar/SelectedDayAgenda";
 import { EmptyState } from "@/components/common/EmptyState";
 import { LoadingSkeleton } from "@/components/common/LoadingSkeleton";
 import { TodoForm } from "@/components/todos/TodoForm";
 import { EventForm } from "@/components/events/EventForm";
+import { Button } from "@/components/common/Button";
 import {
   Sparkles,
   AlertTriangle,
+  CalendarPlus,
   Settings as SettingsIcon,
 } from "lucide-react";
 
@@ -35,12 +39,12 @@ const UPCOMING_LIMIT = 10;
 
 export default function HomePage() {
   const router = useRouter();
-  const { data, toggleTodoCompleted, setSelectedDate, setViewMonth, getTodo } =
+  const { data, toggleTodoCompleted, setSelectedDate, setViewMonth } =
     useAppData();
   const now = useNow();
   const [editing, setEditing] = useState<TodoItem | null>(null);
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
-  // 選択日への予定追加（ページ遷移せずその場で開く）
+  // 予定追加（ページ遷移せずその場で開く）
   const [createEventOpen, setCreateEventOpen] = useState(false);
 
   const { events, todos, settings, initialized } = data;
@@ -64,6 +68,11 @@ export default function HomePage() {
     () => selectUpcomingEvents(events, now, UPCOMING_DAYS, UPCOMING_LIMIT),
     [events, now],
   );
+  // カレンダーで表示中の月の予定（月を送ると更新）
+  const monthEvents = useMemo(
+    () => selectEventsInMonth(events, data.viewMonth),
+    [events, data.viewMonth],
+  );
 
   if (!initialized) {
     return <LoadingSkeleton />;
@@ -71,32 +80,32 @@ export default function HomePage() {
 
   const remaining = countActive(todayTodos);
 
-  // 日付タップ：ページ遷移せず、その日を選択（下のアジェンダに反映）
+  // 表示中の月「yyyy-MM」→ 月番号
+  const monthNum = Number(data.viewMonth.slice(5, 7));
+  // 予定追加時の初期日付：選択日が表示月内ならその日、そうでなければ月初
+  const addDefaultDate = data.selectedDate.startsWith(data.viewMonth)
+    ? data.selectedDate
+    : `${data.viewMonth}-01`;
+
+  // 日付タップ：ページ遷移せず、その日を選択（追加時の初期日付になる）
   const openDay = (dateKey: string) => {
     setSelectedDate(dateKey);
   };
 
   return (
     <div className="space-y-5">
-      {/* ヘッダー */}
+      {/* ヘッダー（日付と残件数のみ・挨拶等の一言は表示しない） */}
       <header className="flex items-start justify-between gap-3 pt-1">
         <div>
-          <p className="text-sm font-medium text-muted">
+          <h1 className="text-xl font-bold tracking-tight">
             {formatJpLongDate(now)}
-          </p>
-          <h1 className="mt-0.5 text-2xl font-bold tracking-tight">
-            {greetingFor(now)}
           </h1>
-          <p className="mt-1 text-sm text-muted">
-            {remaining > 0 ? (
-              <>
-                今日のやること、残り
-                <span className="font-bold text-primary"> {remaining} </span>件
-              </>
-            ) : (
-              "今日も少しずつ進めましょう"
-            )}
-          </p>
+          {remaining > 0 && (
+            <p className="mt-1 text-sm text-muted">
+              今日のやること、残り
+              <span className="font-bold text-primary"> {remaining} </span>件
+            </p>
+          )}
         </div>
         <button
           type="button"
@@ -184,9 +193,9 @@ export default function HomePage() {
           </section>
         </div>
 
-        {/* カレンダー：日付タップでその場に選択日の予定を表示・追加（ページ遷移なし） */}
+        {/* カレンダー＋その月の予定一覧（月を送ると一覧も切り替わる。ページ遷移なし） */}
         <div className="space-y-4">
-          <section aria-label="今月のカレンダー">
+          <section aria-label="カレンダー">
             <MonthlyCalendar
               viewMonth={data.viewMonth}
               selectedDate={data.selectedDate}
@@ -198,16 +207,36 @@ export default function HomePage() {
             />
           </section>
 
-          <SelectedDayAgenda
-            dateKey={data.selectedDate}
-            events={events}
-            todos={todos}
-            getTodo={getTodo}
-            onOpenEvent={(e) => setEditingEvent(e)}
-            onOpenTodo={(t) => setEditing(t)}
-            onToggleTodo={toggleTodoCompleted}
-            onAddEvent={() => setCreateEventOpen(true)}
-          />
+          {/* 表示中の月の予定を一覧表示 */}
+          <section aria-label="この月の予定" className="space-y-2">
+            <div className="flex items-center justify-between px-1">
+              <h2 className="text-sm font-bold">{monthNum}月の予定</h2>
+              <Button
+                variant="secondary"
+                onClick={() => setCreateEventOpen(true)}
+                className="min-h-[36px] px-3 text-xs"
+              >
+                <CalendarPlus size={15} aria-hidden />
+                予定を追加
+              </Button>
+            </div>
+            {monthEvents.length === 0 ? (
+              <p className="rounded-2xl bg-surface px-4 py-5 text-center text-sm text-muted">
+                {monthNum}月の予定はありません
+              </p>
+            ) : (
+              <ul className="space-y-1.5">
+                {monthEvents.map((e) => (
+                  <li key={e.id}>
+                    <UpcomingEventRow
+                      event={e}
+                      onOpen={() => setEditingEvent(e)}
+                    />
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
         </div>
       </div>
 
@@ -221,11 +250,11 @@ export default function HomePage() {
         onClose={() => setEditingEvent(null)}
         event={editingEvent}
       />
-      {/* 選択日を初期値にした新規予定（その場で追加・遷移なし） */}
+      {/* 新規予定（表示中の月・選択日を初期値に。その場で追加・遷移なし） */}
       <EventForm
         open={createEventOpen}
         onClose={() => setCreateEventOpen(false)}
-        defaultDate={data.selectedDate}
+        defaultDate={addDefaultDate}
       />
     </div>
   );

@@ -9,7 +9,7 @@ import {
   toDateKey,
 } from "@/lib/date/dateUtils";
 import { getCategory } from "@/lib/constants/categories";
-import { CalendarClock } from "lucide-react";
+import { CalendarClock, MapPin } from "lucide-react";
 
 /**
  * ホーム「近日の予定」用の 1 行（箇条書き）。
@@ -55,7 +55,7 @@ export function UpcomingEventRow({
           <CalendarClock size={14} />
         </span>
       </span>
-      <span className="flex min-w-0 flex-1 items-center gap-2 py-1.5 pr-1">
+      <span className="flex min-w-0 flex-1 items-start gap-2 py-1.5 pr-1">
         {/* 日付 */}
         <span
           className={`w-14 shrink-0 text-xs font-semibold tabular-nums ${
@@ -68,14 +68,22 @@ export function UpcomingEventRow({
         <span className="w-11 shrink-0 text-xs tabular-nums text-muted">
           {timeLabel}
         </span>
-        {/* 予定名 */}
-        <span className="flex min-w-0 flex-1 items-center gap-1.5 text-sm font-medium text-foreground">
-          <span
-            className="inline-block h-1.5 w-1.5 shrink-0 rounded-full"
-            style={{ backgroundColor: accent }}
-            aria-hidden
-          />
-          <span className="truncate">{event.title}</span>
+        {/* 予定名（＋場所があれば表示） */}
+        <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <span className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+            <span
+              className="inline-block h-1.5 w-1.5 shrink-0 rounded-full"
+              style={{ backgroundColor: accent }}
+              aria-hidden
+            />
+            <span className="truncate">{event.title}</span>
+          </span>
+          {event.location && (
+            <span className="flex items-center gap-1 pl-3 text-xs text-muted">
+              <MapPin size={11} className="shrink-0" aria-hidden />
+              <span className="truncate">{event.location}</span>
+            </span>
+          )}
         </span>
       </span>
     </button>
