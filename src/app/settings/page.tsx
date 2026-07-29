@@ -13,7 +13,14 @@ import {
   parseImport,
 } from "@/lib/storage/importExport";
 import { nowIso } from "@/lib/date/dateUtils";
-import { Download, Upload, Trash2, ChevronLeft } from "lucide-react";
+import { fileToCompressedDataUrl } from "@/lib/image";
+import {
+  Download,
+  Upload,
+  Trash2,
+  ChevronLeft,
+  ImagePlus,
+} from "lucide-react";
 import Link from "next/link";
 
 export default function SettingsPage() {
@@ -22,6 +29,7 @@ export default function SettingsPage() {
   const { showToast } = useToast();
   const { settings, events, todos, initialized } = data;
   const fileRef = useRef<HTMLInputElement>(null);
+  const wallpaperRef = useRef<HTMLInputElement>(null);
 
   const [confirmClearAll, setConfirmClearAll] = useState(false);
   const [confirmClearSample, setConfirmClearSample] = useState(false);
@@ -71,6 +79,23 @@ export default function SettingsPage() {
       showToast("ファイルの読み込みに失敗しました", "error");
     } finally {
       if (fileRef.current) fileRef.current.value = "";
+    }
+  };
+
+  const handleWallpaperFile = async (file: File) => {
+    try {
+      if (!file.type.startsWith("image/")) {
+        showToast("画像ファイルを選んでください", "error");
+        return;
+      }
+      // 壁紙は少し大きめに圧縮（長辺1440px）
+      const dataUrl = await fileToCompressedDataUrl(file, 1440, 0.6);
+      updateSettings({ wallpaper: dataUrl });
+      showToast("壁紙を設定しました");
+    } catch {
+      showToast("壁紙の設定に失敗しました", "error");
+    } finally {
+      if (wallpaperRef.current) wallpaperRef.current.value = "";
     }
   };
 
@@ -128,6 +153,51 @@ export default function SettingsPage() {
             onChange={(v) => updateSettings({ showCompletedOnHome: v })}
           />
         </div>
+      </section>
+
+      {/* 壁紙 */}
+      <section className="space-y-3 rounded-2xl bg-surface p-4 shadow-card">
+        <h2 className="text-sm font-bold">壁紙</h2>
+        <p className="text-xs text-muted">
+          ホーム画面の背景に好きな写真を設定できます（端末内に保存されます）。
+        </p>
+        {settings.wallpaper && (
+          <div className="overflow-hidden rounded-xl border border-border">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={settings.wallpaper}
+              alt="現在の壁紙"
+              className="h-28 w-full object-cover"
+            />
+          </div>
+        )}
+        <div className="grid grid-cols-2 gap-2">
+          <Button
+            variant="secondary"
+            onClick={() => wallpaperRef.current?.click()}
+          >
+            <ImagePlus size={18} aria-hidden />
+            {settings.wallpaper ? "変更" : "画像を選ぶ"}
+          </Button>
+          <Button
+            variant="ghost"
+            onClick={() => updateSettings({ wallpaper: undefined })}
+            disabled={!settings.wallpaper}
+          >
+            <Trash2 size={18} aria-hidden />
+            壁紙を削除
+          </Button>
+        </div>
+        <input
+          ref={wallpaperRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) handleWallpaperFile(f);
+          }}
+        />
       </section>
 
       {/* データ */}

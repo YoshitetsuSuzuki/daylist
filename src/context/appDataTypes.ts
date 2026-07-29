@@ -12,6 +12,8 @@ export interface EventInput {
   category: Category;
   priority: Priority;
   color?: string;
+  /** 添付写真（圧縮済み data URL の配列） */
+  photos?: string[];
   /** ToDo リストに追加するか */
   addTodo: boolean;
   /** 追加する ToDo の締切（未指定なら予定日を使う） */
@@ -25,6 +27,8 @@ export interface TodoInput {
   dueDate?: string;
   dueTime?: string;
   memo?: string;
+  /** 添付写真（圧縮済み data URL の配列） */
+  photos?: string[];
   category: Category;
   priority: Priority;
 }

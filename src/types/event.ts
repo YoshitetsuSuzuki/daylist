@@ -21,6 +21,8 @@ export interface CalendarEvent {
   priority: Priority;
   /** 任意のアクセントカラー（未指定ならカテゴリー色） */
   color?: string;
+  /** 添付写真（圧縮済み data URL の配列） */
+  photos?: string[];
   /** 紐づく ToDo の id（予定→ToDo で作成した場合） */
   linkedTodoId?: string;
   /** ISO 8601 文字列 */

@@ -7,7 +7,7 @@ import {
   PriorityBadge,
   DeadlineBadge,
 } from "@/components/common/Badges";
-import { CalendarClock, StickyNote } from "lucide-react";
+import { CalendarClock, StickyNote, Image as ImageIcon } from "lucide-react";
 
 /**
  * やること 1 件のカード。
@@ -66,6 +66,11 @@ export function TodoCard({
           {todo.memo && (
             <span aria-label="メモあり" title="メモあり">
               <StickyNote size={13} className="text-muted" aria-hidden />
+            </span>
+          )}
+          {todo.photos && todo.photos.length > 0 && (
+            <span aria-label="写真あり" title="写真あり">
+              <ImageIcon size={13} className="text-muted" aria-hidden />
             </span>
           )}
         </span>

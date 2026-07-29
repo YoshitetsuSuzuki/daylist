@@ -27,6 +27,7 @@ export function createEventWithOptionalTodo(
     category: input.category,
     priority: input.priority,
     color: emptyToUndef(input.color),
+    photos: normPhotos(input.photos),
     createdAt: now,
     updatedAt: now,
   };
@@ -122,6 +123,7 @@ export function updateEventWithLinkage(
           category: input.category,
           priority: input.priority,
           color: emptyToUndef(input.color),
+          photos: normPhotos(input.photos),
           linkedTodoId,
           updatedAt: now,
         }
@@ -172,6 +174,7 @@ export function createTodo(
     dueDate: emptyToUndef(input.dueDate),
     dueTime: emptyToUndef(input.dueTime),
     memo: emptyToUndef(input.memo),
+    photos: normPhotos(input.photos),
     category: input.category,
     priority: input.priority,
     isCompleted: false,
@@ -196,6 +199,7 @@ export function updateTodo(
           dueDate: emptyToUndef(input.dueDate),
           dueTime: emptyToUndef(input.dueTime),
           memo: emptyToUndef(input.memo),
+          photos: normPhotos(input.photos),
           category: input.category,
           priority: input.priority,
           updatedAt: now,
@@ -243,4 +247,9 @@ function emptyToUndef(v: string | undefined): string | undefined {
   if (v === undefined) return undefined;
   const trimmed = v.trim();
   return trimmed === "" ? undefined : trimmed;
+}
+
+/** 空配列は undefined に正規化（保存データを膨らませない） */
+function normPhotos(v: string[] | undefined): string[] | undefined {
+  return v && v.length > 0 ? v : undefined;
 }

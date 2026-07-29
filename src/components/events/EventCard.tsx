@@ -3,7 +3,7 @@
 import type { CalendarEvent } from "@/types";
 import { CategoryBadge } from "@/components/common/Badges";
 import { getCategory } from "@/lib/constants/categories";
-import { MapPin, CheckSquare, StickyNote } from "lucide-react";
+import { MapPin, CheckSquare, StickyNote, Image as ImageIcon } from "lucide-react";
 
 /**
  * 予定 1 件のカード。左端にカテゴリー色（または指定色）のバー。
@@ -62,6 +62,11 @@ export function EventCard({
           {event.memo && (
             <span aria-label="メモあり" title="メモあり">
               <StickyNote size={12} className="text-muted" aria-hidden />
+            </span>
+          )}
+          {event.photos && event.photos.length > 0 && (
+            <span aria-label="写真あり" title="写真あり">
+              <ImageIcon size={12} className="text-muted" aria-hidden />
             </span>
           )}
         </div>

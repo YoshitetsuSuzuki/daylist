@@ -14,6 +14,7 @@ import {
   PriorityPicker,
 } from "@/components/common/FormFields";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
+import { PhotoAttach } from "@/components/common/PhotoAttach";
 import { DEFAULT_CATEGORY } from "@/lib/constants/categories";
 import { DEFAULT_PRIORITY } from "@/lib/constants/priorities";
 import { validateTodo } from "@/lib/validation/todoValidation";
@@ -39,6 +40,7 @@ export function TodoForm({ open, onClose, todo, defaultDate }: Props) {
   const [category, setCategory] = useState<Category>(DEFAULT_CATEGORY);
   const [priority, setPriority] = useState<Priority>(DEFAULT_PRIORITY);
   const [memo, setMemo] = useState("");
+  const [photos, setPhotos] = useState<string[]>([]);
   const [errors, setErrors] = useState<Record<string, string | undefined>>({});
   const [confirmDelete, setConfirmDelete] = useState(false);
 
@@ -54,6 +56,7 @@ export function TodoForm({ open, onClose, todo, defaultDate }: Props) {
       setCategory(todo.category);
       setPriority(todo.priority);
       setMemo(todo.memo ?? "");
+      setPhotos(todo.photos ?? []);
     } else {
       setTitle("");
       setDueDate(defaultDate ?? "");
@@ -61,6 +64,7 @@ export function TodoForm({ open, onClose, todo, defaultDate }: Props) {
       setCategory(DEFAULT_CATEGORY);
       setPriority(DEFAULT_PRIORITY);
       setMemo("");
+      setPhotos([]);
     }
   }, [open, todo, defaultDate]);
 
@@ -82,6 +86,7 @@ export function TodoForm({ open, onClose, todo, defaultDate }: Props) {
       category,
       priority,
       memo: memo || undefined,
+      photos,
     };
     if (isEdit && todo) {
       editTodo(todo.id, input);
@@ -179,6 +184,10 @@ export function TodoForm({ open, onClose, todo, defaultDate }: Props) {
               onChange={(e) => setMemo(e.target.value)}
               placeholder="詳細・補足"
             />
+          </Field>
+
+          <Field label="写真（任意）">
+            <PhotoAttach value={photos} onChange={setPhotos} />
           </Field>
 
           {isEdit && (

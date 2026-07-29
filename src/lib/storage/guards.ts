@@ -22,6 +22,9 @@ function isOptStr(v: unknown): v is string | undefined {
 function isBool(v: unknown): v is boolean {
   return typeof v === "boolean";
 }
+function isOptStrArray(v: unknown): v is string[] | undefined {
+  return v === undefined || (Array.isArray(v) && v.every(isStr));
+}
 
 export function isCategory(v: unknown): v is Category {
   return isStr(v) && (CATEGORIES as string[]).includes(v);
@@ -44,6 +47,7 @@ export function isCalendarEvent(v: unknown): v is CalendarEvent {
     isCategory(v.category) &&
     isPriority(v.priority) &&
     isOptStr(v.color) &&
+    isOptStrArray(v.photos) &&
     isOptStr(v.linkedTodoId) &&
     isStr(v.createdAt) &&
     isStr(v.updatedAt)
@@ -58,6 +62,7 @@ export function isTodoItem(v: unknown): v is TodoItem {
     isOptStr(v.dueDate) &&
     isOptStr(v.dueTime) &&
     isOptStr(v.memo) &&
+    isOptStrArray(v.photos) &&
     isCategory(v.category) &&
     isPriority(v.priority) &&
     isBool(v.isCompleted) &&
@@ -80,7 +85,8 @@ export function isSettings(v: unknown): v is Settings {
   return (
     (v.weekStartsOn === 0 || v.weekStartsOn === 1) &&
     isBool(v.showCompletedOnHome) &&
-    isBool(v.sampleDataSeeded)
+    isBool(v.sampleDataSeeded) &&
+    isOptStr(v.wallpaper)
   );
 }
 

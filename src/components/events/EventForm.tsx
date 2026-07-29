@@ -15,6 +15,7 @@ import {
   PriorityPicker,
 } from "@/components/common/FormFields";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
+import { PhotoAttach } from "@/components/common/PhotoAttach";
 import { DEFAULT_CATEGORY } from "@/lib/constants/categories";
 import { DEFAULT_PRIORITY } from "@/lib/constants/priorities";
 import { validateEvent, hasErrors } from "@/lib/validation/eventValidation";
@@ -54,6 +55,7 @@ export function EventForm({ open, onClose, event, defaultDate }: Props) {
   const [priority, setPriority] = useState<Priority>(DEFAULT_PRIORITY);
   const [location, setLocation] = useState("");
   const [memo, setMemo] = useState("");
+  const [photos, setPhotos] = useState<string[]>([]);
   const [color, setColor] = useState("");
   const [addTodo, setAddTodo] = useState(false);
   const [todoDueDate, setTodoDueDate] = useState("");
@@ -77,6 +79,7 @@ export function EventForm({ open, onClose, event, defaultDate }: Props) {
       setPriority(event.priority);
       setLocation(event.location ?? "");
       setMemo(event.memo ?? "");
+      setPhotos(event.photos ?? []);
       setColor(event.color ?? "");
       const linked = event.linkedTodoId ? getTodo(event.linkedTodoId) : undefined;
       setAddTodo(!!linked);
@@ -93,6 +96,7 @@ export function EventForm({ open, onClose, event, defaultDate }: Props) {
       setPriority(DEFAULT_PRIORITY);
       setLocation("");
       setMemo("");
+      setPhotos([]);
       setColor("");
       setAddTodo(false);
       setTodoDueDate(d);
@@ -123,6 +127,7 @@ export function EventForm({ open, onClose, event, defaultDate }: Props) {
       priority,
       location: location || undefined,
       memo: memo || undefined,
+      photos,
       color: color || undefined,
       addTodo,
       todoDueDate: addTodo ? todoDueDate || date : undefined,
@@ -234,6 +239,10 @@ export function EventForm({ open, onClose, event, defaultDate }: Props) {
               onChange={(e) => setMemo(e.target.value)}
               placeholder="持ち物・準備など"
             />
+          </Field>
+
+          <Field label="写真（任意）">
+            <PhotoAttach value={photos} onChange={setPhotos} />
           </Field>
 
           <Field label="カテゴリー">

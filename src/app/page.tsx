@@ -94,6 +94,17 @@ export default function HomePage() {
 
   return (
     <div className="space-y-5">
+      {/* 壁紙（設定時のみ。テキストの可読性のため薄いスクリムを重ねる） */}
+      {settings.wallpaper && (
+        <div aria-hidden className="fixed inset-0 -z-10">
+          <div
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: `url(${settings.wallpaper})` }}
+          />
+          <div className="absolute inset-0 bg-bg/70" />
+        </div>
+      )}
+
       {/* ヘッダー（日付と残件数のみ・挨拶等の一言は表示しない） */}
       <header className="flex items-start justify-between gap-3 pt-1">
         <div>

@@ -13,6 +13,8 @@ export interface TodoItem {
   /** "HH:mm" */
   dueTime?: string;
   memo?: string;
+  /** 添付写真（圧縮済み data URL の配列） */
+  photos?: string[];
   category: Category;
   priority: Priority;
   isCompleted: boolean;

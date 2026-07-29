@@ -6,6 +6,8 @@ export interface Settings {
   showCompletedOnHome: boolean;
   /** サンプルデータを投入済みか（削除後に復活させないためのフラグ） */
   sampleDataSeeded: boolean;
+  /** ホームの壁紙（圧縮済み data URL。未設定なら既定背景） */
+  wallpaper?: string;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
