@@ -7,6 +7,7 @@ import { BottomNavigation } from "./BottomNavigation";
 import { FloatingAddButton } from "./FloatingAddButton";
 import { ToastViewport } from "@/components/common/ToastViewport";
 import { ServiceWorkerRegister } from "./ServiceWorkerRegister";
+import { ThemeApplier } from "./ThemeApplier";
 
 /**
  * クライアント側のプロバイダとグローバル UI をまとめる。
@@ -23,6 +24,7 @@ export function ClientProviders({ children }: { children: ReactNode }) {
         <FloatingAddButton />
         <ToastViewport />
         <ServiceWorkerRegister />
+        <ThemeApplier />
       </AppDataProvider>
     </ToastProvider>
   );

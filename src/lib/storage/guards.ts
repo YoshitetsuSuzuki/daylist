@@ -87,7 +87,8 @@ export function isSettings(v: unknown): v is Settings {
     isBool(v.showCompletedOnHome) &&
     isBool(v.sampleDataSeeded) &&
     isOptStr(v.wallpaper) &&
-    (v.wallpaperOpacity === undefined || typeof v.wallpaperOpacity === "number")
+    (v.wallpaperOpacity === undefined || typeof v.wallpaperOpacity === "number") &&
+    isOptStr(v.theme)
   );
 }
 

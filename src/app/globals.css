@@ -25,6 +25,31 @@
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 
+/*
+ * カラーテーマ。data-theme をルート要素に付けて主要色を切り替える。
+ * indigo は既定（:root）なので属性なし。以下は主要色とその薄色・背景の微調整のみ。
+ */
+[data-theme="ocean"] {
+  --color-primary: 14 165 165;
+  --color-primary-soft: 226 244 244;
+  --color-bg: 241 247 247;
+}
+[data-theme="forest"] {
+  --color-primary: 63 157 95;
+  --color-primary-soft: 231 244 236;
+  --color-bg: 243 248 244;
+}
+[data-theme="sunset"] {
+  --color-primary: 224 122 79;
+  --color-primary-soft: 252 238 231;
+  --color-bg: 250 246 243;
+}
+[data-theme="rose"] {
+  --color-primary: 219 90 134;
+  --color-primary-soft: 252 233 240;
+  --color-bg: 251 244 247;
+}
+
 /* 将来のダークモード用（今は無効。data-theme='dark' で有効化できる） */
 [data-theme="dark"] {
   --color-bg: 17 19 24;

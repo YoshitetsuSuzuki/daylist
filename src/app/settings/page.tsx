@@ -3,7 +3,8 @@
 import { useRef, useState } from "react";
 import { useAppData } from "@/context/AppDataContext";
 import { useToast } from "@/context/ToastContext";
-import { DEFAULT_WALLPAPER_OPACITY } from "@/types";
+import { DEFAULT_WALLPAPER_OPACITY, DEFAULT_THEME } from "@/types";
+import { THEMES } from "@/lib/constants/themes";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { LoadingSkeleton } from "@/components/common/LoadingSkeleton";
 import { Toggle } from "@/components/common/FormFields";
@@ -21,6 +22,7 @@ import {
   Trash2,
   ChevronLeft,
   ImagePlus,
+  Check,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -153,6 +155,47 @@ export default function SettingsPage() {
             checked={settings.showCompletedOnHome}
             onChange={(v) => updateSettings({ showCompletedOnHome: v })}
           />
+        </div>
+      </section>
+
+      {/* テーマ */}
+      <section className="space-y-3 rounded-2xl bg-surface p-4 shadow-card">
+        <h2 className="text-sm font-bold">テーマ</h2>
+        <p className="text-xs text-muted">アプリの色を選べます。</p>
+        <div className="grid grid-cols-5 gap-2">
+          {THEMES.map((t) => {
+            const active = (settings.theme ?? DEFAULT_THEME) === t.key;
+            return (
+              <button
+                key={t.key}
+                type="button"
+                onClick={() => updateSettings({ theme: t.key })}
+                aria-pressed={active}
+                aria-label={`テーマ ${t.label}`}
+                className="flex flex-col items-center gap-1"
+              >
+                <span
+                  className={`flex h-11 w-11 items-center justify-center rounded-full border-2 transition ${
+                    active ? "border-foreground" : "border-transparent"
+                  }`}
+                >
+                  <span
+                    className="flex h-9 w-9 items-center justify-center rounded-full text-white"
+                    style={{ backgroundColor: t.color }}
+                  >
+                    {active && <Check size={16} strokeWidth={3} aria-hidden />}
+                  </span>
+                </span>
+                <span
+                  className={`text-[11px] ${
+                    active ? "font-bold text-foreground" : "text-muted"
+                  }`}
+                >
+                  {t.label}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </section>
 
