@@ -154,9 +154,9 @@ export default function HomePage() {
         </button>
       </header>
 
-      {/* PC では2カラム、モバイルは1カラム */}
+      {/* PC では2カラム、モバイルは1カラム。min-w-0 で列が内容で広がらないようにする */}
       <div className="grid gap-5 lg:grid-cols-2">
-        <div className="space-y-5">
+        <div className="min-w-0 space-y-5">
           {/* 期限切れ（あれば最上部） */}
           {overdue.length > 0 && (
             <section aria-label="期限切れのやること" className="space-y-2">
@@ -231,7 +231,7 @@ export default function HomePage() {
         </div>
 
         {/* カレンダー（月／週を切り替え）。ページ遷移なし */}
-        <div className="space-y-3">
+        <div className="min-w-0 space-y-3">
           {/* 月／週 切り替え（控えめな小さいトグル） */}
           <div className="flex justify-end">
             <div

@@ -124,7 +124,7 @@ export function WeeklySchedule({
                         type="button"
                         onClick={() => onOpenEvent(e)}
                         aria-label={`予定「${e.title}」を編集`}
-                        className="flex items-center gap-1.5 rounded-lg bg-surface-muted/60 px-2 py-1 text-left"
+                        className="flex w-full min-w-0 items-center gap-1.5 rounded-lg bg-surface-muted/60 px-2 py-1 text-left"
                       >
                         <span
                           className="h-1.5 w-1.5 shrink-0 rounded-full"
@@ -136,7 +136,7 @@ export function WeeklySchedule({
                             {t}
                           </span>
                         )}
-                        <span className="truncate text-sm font-medium text-foreground">
+                        <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
                           {e.title}
                         </span>
                       </button>
