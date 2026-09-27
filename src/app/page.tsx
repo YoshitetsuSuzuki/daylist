@@ -16,12 +16,19 @@ import {
   selectUpcomingEvents,
   selectEventsInMonth,
 } from "@/lib/selectors/eventSelectors";
-import { formatJpLongDate } from "@/lib/date/dateUtils";
+import {
+  formatJpLongDate,
+  parseDateKey,
+  addDays,
+  toDateKey,
+  todayKey,
+} from "@/lib/date/dateUtils";
 import { getDeadlineState } from "@/lib/date/deadlineUtils";
 import { TodoCard } from "@/components/todos/TodoCard";
 import { UpcomingTodoRow } from "@/components/todos/UpcomingTodoRow";
 import { UpcomingEventRow } from "@/components/events/UpcomingEventRow";
 import { MonthlyCalendar } from "@/components/calendar/MonthlyCalendar";
+import { WeeklySchedule } from "@/components/calendar/WeeklySchedule";
 import { EmptyState } from "@/components/common/EmptyState";
 import { LoadingSkeleton } from "@/components/common/LoadingSkeleton";
 import { TodoForm } from "@/components/todos/TodoForm";
@@ -45,8 +52,12 @@ export default function HomePage() {
   const now = useNow();
   const [editing, setEditing] = useState<TodoItem | null>(null);
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
-  // 予定追加（ページ遷移せずその場で開く）
-  const [createEventOpen, setCreateEventOpen] = useState(false);
+  // 予定追加（ページ遷移せずその場で開く）。開く日付を保持
+  const [createDate, setCreateDate] = useState<string | null>(null);
+  // カレンダー表示: 月 / 週
+  const [calView, setCalView] = useState<"month" | "week">("month");
+  // 週表示の基準日（未設定なら選択日＝通常は今日）
+  const [weekAnchor, setWeekAnchor] = useState("");
 
   const { events, todos, settings, initialized } = data;
 
@@ -91,6 +102,13 @@ export default function HomePage() {
   // 日付タップ：ページ遷移せず、その日を選択（追加時の初期日付になる）
   const openDay = (dateKey: string) => {
     setSelectedDate(dateKey);
+  };
+
+  // 週表示の基準日（未設定なら選択日）と週送り
+  const anchorKey = weekAnchor || data.selectedDate;
+  const shiftWeek = (delta: number) => {
+    const base = parseDateKey(anchorKey) ?? now;
+    setWeekAnchor(toDateKey(addDays(base, delta * 7)));
   };
 
   return (
@@ -212,50 +230,93 @@ export default function HomePage() {
           </section>
         </div>
 
-        {/* カレンダー＋その月の予定一覧（月を送ると一覧も切り替わる。ページ遷移なし） */}
-        <div className="space-y-4">
-          <section aria-label="カレンダー">
-            <MonthlyCalendar
-              viewMonth={data.viewMonth}
-              selectedDate={data.selectedDate}
-              events={events}
-              todos={todos}
-              weekStartsOn={settings.weekStartsOn}
-              onSelectDate={openDay}
-              onChangeMonth={setViewMonth}
-            />
-          </section>
-
-          {/* 表示中の月の予定を一覧表示 */}
-          <section aria-label="この月の予定" className="space-y-2">
-            <div className="flex items-center justify-between px-1">
-              <h2 className="text-sm font-bold">{monthNum}月の予定</h2>
-              <Button
-                variant="secondary"
-                onClick={() => setCreateEventOpen(true)}
-                className="min-h-[36px] px-3 text-xs"
-              >
-                <CalendarPlus size={15} aria-hidden />
-                予定を追加
-              </Button>
+        {/* カレンダー（月／週を切り替え）。ページ遷移なし */}
+        <div className="space-y-3">
+          {/* 月／週 切り替え（控えめな小さいトグル） */}
+          <div className="flex justify-end">
+            <div
+              role="tablist"
+              aria-label="カレンダー表示の切り替え"
+              className="flex gap-0.5 rounded-lg bg-surface-muted p-0.5"
+            >
+              {(["month", "week"] as const).map((v) => (
+                <button
+                  key={v}
+                  role="tab"
+                  aria-selected={calView === v}
+                  onClick={() => setCalView(v)}
+                  className={`min-h-[32px] rounded-md px-3 text-xs font-semibold transition ${
+                    calView === v
+                      ? "bg-surface text-foreground shadow-card"
+                      : "text-muted hover:text-foreground"
+                  }`}
+                >
+                  {v === "month" ? "月" : "週"}
+                </button>
+              ))}
             </div>
-            {monthEvents.length === 0 ? (
-              <p className="rounded-2xl bg-surface px-4 py-5 text-center text-sm text-muted">
-                {monthNum}月の予定はありません
-              </p>
-            ) : (
-              <ul className="space-y-1.5">
-                {monthEvents.map((e) => (
-                  <li key={e.id}>
-                    <UpcomingEventRow
-                      event={e}
-                      onOpen={() => setEditingEvent(e)}
-                    />
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
+          </div>
+
+          {calView === "month" ? (
+            <>
+              <section aria-label="カレンダー">
+                <MonthlyCalendar
+                  viewMonth={data.viewMonth}
+                  selectedDate={data.selectedDate}
+                  events={events}
+                  todos={todos}
+                  weekStartsOn={settings.weekStartsOn}
+                  onSelectDate={openDay}
+                  onChangeMonth={setViewMonth}
+                />
+              </section>
+
+              {/* 表示中の月の予定を一覧表示 */}
+              <section aria-label="この月の予定" className="space-y-2">
+                <div className="flex items-center justify-between px-1">
+                  <h2 className="text-sm font-bold">{monthNum}月の予定</h2>
+                  <Button
+                    variant="secondary"
+                    onClick={() => setCreateDate(addDefaultDate)}
+                    className="min-h-[36px] px-3 text-xs"
+                  >
+                    <CalendarPlus size={15} aria-hidden />
+                    予定を追加
+                  </Button>
+                </div>
+                {monthEvents.length === 0 ? (
+                  <p className="rounded-2xl bg-surface px-4 py-5 text-center text-sm text-muted">
+                    {monthNum}月の予定はありません
+                  </p>
+                ) : (
+                  <ul className="space-y-1.5">
+                    {monthEvents.map((e) => (
+                      <li key={e.id}>
+                        <UpcomingEventRow
+                          event={e}
+                          onOpen={() => setEditingEvent(e)}
+                        />
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </section>
+            </>
+          ) : (
+            <section aria-label="週間予定表">
+              <WeeklySchedule
+                anchorKey={anchorKey}
+                events={events}
+                weekStartsOn={settings.weekStartsOn}
+                today={now}
+                onPrevWeek={() => shiftWeek(-1)}
+                onNextWeek={() => shiftWeek(1)}
+                onToday={() => setWeekAnchor(todayKey())}
+                onAddDay={(key) => setCreateDate(key)}
+                onOpenEvent={(e) => setEditingEvent(e)}
+              />
+            </section>
+          )}
         </div>
       </div>
 
@@ -269,11 +330,11 @@ export default function HomePage() {
         onClose={() => setEditingEvent(null)}
         event={editingEvent}
       />
-      {/* 新規予定（表示中の月・選択日を初期値に。その場で追加・遷移なし） */}
+      {/* 新規予定（選んだ日付を初期値に。その場で追加・遷移なし） */}
       <EventForm
-        open={createEventOpen}
-        onClose={() => setCreateEventOpen(false)}
-        defaultDate={addDefaultDate}
+        open={createDate !== null}
+        onClose={() => setCreateDate(null)}
+        defaultDate={createDate ?? undefined}
       />
     </div>
   );

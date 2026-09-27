@@ -34,7 +34,14 @@ export function UpcomingEventRow({
   const cat = getCategory(event.category);
   const accent = event.color || cat.color;
 
-  const timeLabel = event.isAllDay ? "終日" : (event.startTime ?? "");
+  // 開始〜終了を表示（終了が無ければ開始のみ／終日は「終日」）
+  const timeLabel = event.isAllDay
+    ? "終日"
+    : event.startTime
+      ? event.endTime
+        ? `${event.startTime}〜${event.endTime}`
+        : event.startTime
+      : "";
 
   return (
     <button
@@ -64,8 +71,8 @@ export function UpcomingEventRow({
         >
           {isToday ? "今日" : isTomorrow ? "明日" : dateLabel}
         </span>
-        {/* 時間 */}
-        <span className="w-11 shrink-0 text-xs tabular-nums text-muted">
+        {/* 時間（開始〜終了） */}
+        <span className="w-[84px] shrink-0 whitespace-nowrap text-xs tabular-nums text-muted">
           {timeLabel}
         </span>
         {/* 予定名（＋場所があれば表示） */}
